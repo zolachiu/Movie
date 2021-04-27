@@ -15,6 +15,7 @@ class ViewController: UIViewController,UICollectionViewDataSource,UICollectionVi
     @IBOutlet weak var movieCollectionViewFlowLayout: UICollectionViewFlowLayout!
     let urlStr = "https://api.airtable.com/v0/appYZwCuz5lum6K3K/Movie"
     var movieData: Array<Record> = []
+    
 
     let refreshControl = UIRefreshControl()
     
@@ -54,7 +55,6 @@ class ViewController: UIViewController,UICollectionViewDataSource,UICollectionVi
     
     @IBAction func AddItem(_ sender: UIBarButtonItem) {
         
-        var data = ResponseData(records: [])
         
         let alert = UIAlertController(title: "Add New Movie", message: nil, preferredStyle: .alert)
         
@@ -84,26 +84,29 @@ class ViewController: UIViewController,UICollectionViewDataSource,UICollectionVi
             textField.keyboardType = UIKeyboardType.numberPad
         }
 
-//        let moviename = alert.textFields?[0].text!
-//        let imdb = alert.textFields?[1].text!
-//        let releasedate = alert.textFields?[2].text
-//        let genre = alert.textFields?[3].text!
-//        let image = alert.textFields?[4].text!
-//        let rank = alert.textFields?[5].text!
-
-//        let dateFormatter = DateFormatter()
-//        dateFormatter.locale = Locale(identifier: "zh_tw")
-//        dateFormatter.dateFormat = "yyyy-MM-dd"
-//        let date = dateFormatter.date(from: (alert.textFields?[2].text)!)
-        
- 
-
         let okAction = UIAlertAction(title: "Save", style: .default) { (_) in
             
             let formatter = DateFormatter()
             formatter.dateFormat = "yyyy-MM-dd"
-            let movieBody = MovieBody(records: [.init(fields: .init(name:  (alert.textFields?[0].text!)!, imdb: Double((alert.textFields?[1].text!)!), releaseDate: formatter.date(from: (alert.textFields?[2].text!)!)!, genre: [(alert.textFields?[3].text!)!], image: [.init(url: URL(string: (alert.textFields?[4].text!)!)!)],rank: Int( (alert.textFields?[5].text!)!
-)))])
+//            let movieBody = MovieBody(records: [.init(fields: .init(name:  (alert.textFields?[0].text!)!, imdb: Double((alert.textFields?[1].text!)!), releaseDate: formatter.date(from: (alert.textFields?[2].text!)!)!, genre: [(alert.textFields?[3].text!)!], image: [.init(url: URL(string: (alert.textFields?[4].text!)!)!)],rank: Int( (alert.textFields?[5].text!)!
+//)))])
+            var name: String = ""
+            var imdb : Double = 0.0
+            var releasedate :Date
+            var genre = [String]()
+            var imageurl : String
+            var rank : Int = 0
+            
+            name = (alert.textFields?[0].text)!
+            imdb = Double((alert.textFields?[1].text)!) ?? 0.0
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy-MM-dd"
+            releasedate = dateFormatter.date(from: (alert.textFields?[2].text)!)!
+            genre = ((alert.textFields?[3].text)?.components(separatedBy: " "))!
+            imageurl = (alert.textFields?[4].text)!
+            rank = Int((alert.textFields?[5].text)!)!
+    
+            let movieBody = ResponseData(records: [.init(fields: .init(genre: genre, name: name, imdb: imdb, image: [.init(url: imageurl)], releaseDate: releasedate, rank: rank))])
             
             let url = URL(string: "https://api.airtable.com/v0/appYZwCuz5lum6K3K/Movie")!
             var request = URLRequest(url: url)
@@ -120,8 +123,8 @@ class ViewController: UIViewController,UICollectionViewDataSource,UICollectionVi
                     print(content)
                 }
             }.resume()
-
         }
+
         alert.addAction(okAction)
         let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
         alert.addAction(cancelAction)
@@ -168,6 +171,10 @@ class ViewController: UIViewController,UICollectionViewDataSource,UICollectionVi
         
         URLSession.shared.dataTask(with: urlRequest) { (data, response, error) in
             let decoder = JSONDecoder()
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy-MM-dd"
+            decoder.dateDecodingStrategy = .formatted(dateFormatter)
+
             if let data = data {
                 do {
                     let result = try decoder.decode(ResponseData.self, from: data)

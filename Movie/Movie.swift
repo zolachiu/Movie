@@ -13,7 +13,6 @@ struct ResponseData: Codable {
 }
 
 struct Record: Codable {
-    let id: String
     var fields: Field
     static func saveToFile(records: [Record]) {
         print("save Movie Data")
@@ -43,7 +42,7 @@ struct Field: Codable {
     var name: String
     var imdb: Double?
     var image: [MovieImage]
-    var releaseDate: String
+    var releaseDate: Date
     var rank: Int?
     struct MovieImage: Codable {
         var url: String
