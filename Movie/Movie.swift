@@ -13,6 +13,7 @@ struct ResponseData: Codable {
 }
 
 struct Record: Codable {
+    let id: String?
     var fields: Field
     static func saveToFile(records: [Record]) {
         print("save Movie Data")
@@ -36,7 +37,6 @@ struct Record: Codable {
         }
     }
 }
-
 struct Field: Codable {
     var genre: [String]
     var name: String
@@ -49,22 +49,11 @@ struct Field: Codable {
     }
     
 }
-struct MovieBody: Encodable {
-    let records: [Records]
+struct uploaddata: Codable{
+    let id: String
+    var fields: Field
 }
-struct Records: Encodable {
-    let fields: Fields
+struct deletedata: Codable{
+    let id: String
+    var deleted: Bool
 }
-struct Fields: Encodable {
-    let name: String
-    let imdb: Double?
-    let releaseDate: Date
-    let genre: [String]
-    let image: [ImageData]
-    struct ImageData: Encodable {
-    let url: URL
-        
-    }
-    let rank: Int?
-}
-

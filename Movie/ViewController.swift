@@ -88,8 +88,6 @@ class ViewController: UIViewController,UICollectionViewDataSource,UICollectionVi
             
             let formatter = DateFormatter()
             formatter.dateFormat = "yyyy-MM-dd"
-//            let movieBody = MovieBody(records: [.init(fields: .init(name:  (alert.textFields?[0].text!)!, imdb: Double((alert.textFields?[1].text!)!), releaseDate: formatter.date(from: (alert.textFields?[2].text!)!)!, genre: [(alert.textFields?[3].text!)!], image: [.init(url: URL(string: (alert.textFields?[4].text!)!)!)],rank: Int( (alert.textFields?[5].text!)!
-//)))])
             var name: String = ""
             var imdb : Double = 0.0
             var releasedate :Date
@@ -106,7 +104,8 @@ class ViewController: UIViewController,UICollectionViewDataSource,UICollectionVi
             imageurl = (alert.textFields?[4].text)!
             rank = Int((alert.textFields?[5].text)!)!
     
-            let movieBody = ResponseData(records: [.init(fields: .init(genre: genre, name: name, imdb: imdb, image: [.init(url: imageurl)], releaseDate: releasedate, rank: rank))])
+            let movieBody = ResponseData(records: [.init(id: nil,fields: .init(genre: genre, name: name, imdb: imdb, image: [.init(url: imageurl)], releaseDate: releasedate, rank: rank))])
+            
             
             let url = URL(string: "https://api.airtable.com/v0/appYZwCuz5lum6K3K/Movie")!
             var request = URLRequest(url: url)
