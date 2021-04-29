@@ -104,7 +104,7 @@ class ViewController: UIViewController,UICollectionViewDataSource,UICollectionVi
             imageurl = (alert.textFields?[4].text)!
             rank = Int((alert.textFields?[5].text)!)!
     
-            let movieBody = ResponseData(records: [.init(id: nil,fields: .init(genre: genre, name: name, imdb: imdb, image: [.init(url: imageurl)], releaseDate: releasedate, rank: rank))])
+            let movieBody = ResponseData(records: [.init(id: nil,fields: .init(genre: genre, name: name, imdb: imdb, image: [.init(id: nil,url: imageurl)], releaseDate: releasedate, rank: rank))])
             
             
             let url = URL(string: "https://api.airtable.com/v0/appYZwCuz5lum6K3K/Movie")!
@@ -141,7 +141,7 @@ class ViewController: UIViewController,UICollectionViewDataSource,UICollectionVi
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: reuseIdentifier, for: indexPath) as! MovieCollectionViewCell
         cell.movieNameLabel.text = movieData[indexPath.item].fields.name
         cell.movieImageView.image = nil
-        if let imageUrl = URL(string: movieData[indexPath.item].fields.image[0].url) {
+        if let imageUrl = URL(string: movieData[indexPath.item].fields.image[0].url!) {
             URLSession.shared.dataTask(with: imageUrl) { (data, response, error) in
                 if let data = data {
                     DispatchQueue.main.async {

@@ -45,7 +45,8 @@ struct Field: Codable {
     var releaseDate: Date
     var rank: Int?
     struct MovieImage: Codable {
-        var url: String
+        let id: String?
+        var url: String?
     }
     
 }

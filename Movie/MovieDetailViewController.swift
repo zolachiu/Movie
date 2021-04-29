@@ -9,7 +9,7 @@ import UIKit
 
 class MovieDetailViewController: UIViewController {
     var data = ResponseData(records: [])
-    var movieDetailData = Record(id: nil,fields: .init(genre: [], name: "", imdb: 0.0, image: [.init(url: "")], releaseDate: Date(), rank: 0))
+    var movieDetailData = Record(id: nil,fields: .init(genre: [], name: "", imdb: 0.0, image: [.init(id: nil,url: "")], releaseDate: Date(), rank: 0))
     
     @IBOutlet weak var ImageView: UIImageView!
     @IBOutlet weak var name: UILabel!
@@ -20,7 +20,7 @@ class MovieDetailViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        if let imageUrl = URL(string: movieDetailData.fields.image[0].url) {
+        if let imageUrl = URL(string: movieDetailData.fields.image[0].url!) {
             URLSession.shared.dataTask(with: imageUrl) { (data, response, error) in
                 if let data = data {
                     DispatchQueue.main.async {
@@ -70,13 +70,6 @@ class MovieDetailViewController: UIViewController {
             textField.keyboardType = UIKeyboardType.default
             movieDetailData.fields.genre = [textField.text!]
         }
-
-        alert.addTextField{ [self] (textField) in
-            textField.placeholder = "image"
-            textField.text = String(self.movieDetailData.fields.image[0].url)
-            textField.keyboardType = UIKeyboardType.URL
-            movieDetailData.fields.image[0].url = textField.text!
-        }
         alert.addTextField{ [self] (textField) in
             textField.placeholder = "rank"
             textField.text = String(self.movieDetailData.fields.rank!)
@@ -93,7 +86,6 @@ class MovieDetailViewController: UIViewController {
             var imdb : Double = 0.0
             var releasedate :Date
             var genre = [String]()
-            var imageurl : String
             var rank : Int = 0
             
             name = (alert.textFields?[0].text)!
@@ -102,13 +94,12 @@ class MovieDetailViewController: UIViewController {
             dateFormatter.dateFormat = "yyyy-MM-dd"
             releasedate = dateFormatter.date(from: (alert.textFields?[2].text)!)!
             genre = ((alert.textFields?[3].text)?.components(separatedBy: " "))!
-            imageurl = (alert.textFields?[4].text)!
-            rank = Int((alert.textFields?[5].text)!)!
+            rank = Int((alert.textFields?[4].text)!)!
     
-            let movieBody = ResponseData(records: [.init(id: movieDetailData.id,fields: .init(genre: genre, name: name, imdb: imdb, image: [.init(url: imageurl)], releaseDate: releasedate, rank: rank))])
+            let movieBody = ResponseData(records: [.init(id: movieDetailData.id,fields: .init(genre: genre, name: name, imdb: imdb, image: [.init(id: movieDetailData.fields.image[0].id,url: nil)], releaseDate: releasedate, rank: rank))])
+            
 
-
-            let url = URL(string: "https://api.airtable.com/v0/appYZwCuz5lum6K3K/Movie/\(movieDetailData.id)")!
+            let url = URL(string: "https://api.airtable.com/v0/appYZwCuz5lum6K3K/Movie")!
             print(url)
             var request = URLRequest(url: url)
             request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
