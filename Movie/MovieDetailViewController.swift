@@ -34,14 +34,16 @@ class MovieDetailViewController: UIViewController {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd"
         releasedate.text = dateFormatter.string(from: movieDetailData.fields.releaseDate)
-        genre.text = genrestring.joined(separator: " ")
+        genre.text = genrestring.joined(separator: ",")
         imdb.text = String(movieDetailData.fields.imdb!)
         rank.text = String(movieDetailData.fields.rank!)
+        print(movieDetailData.fields.genre)
         
     }
-
     @IBAction func editItem(_ sender: UIBarButtonItem) {
         let alert = UIAlertController(title: "Edit Movie Data", message: nil, preferredStyle: .alert)
+        
+        
 
         alert.addTextField{ [self] (textField) in
             textField.placeholder = "movie name"
@@ -66,7 +68,7 @@ class MovieDetailViewController: UIViewController {
         }
         alert.addTextField{ [self] (textField) in
             textField.placeholder = "genre"
-            textField.text = String(self.movieDetailData.fields.genre.joined(separator: " "))
+            textField.text = String(self.movieDetailData.fields.genre.joined(separator: ","))
             textField.keyboardType = UIKeyboardType.default
             movieDetailData.fields.genre = [textField.text!]
         }
@@ -77,8 +79,13 @@ class MovieDetailViewController: UIViewController {
             movieDetailData.fields.rank = Int(textField.text!)
         }
 
-
         let okAction = UIAlertAction(title: "Edit", style: .default) { [self] (_) in
+            
+            let nametext = alert.textFields?[0].text ?? ""
+            let imdbtext = alert.textFields?[1].text ?? ""
+            let releasedatetext = alert.textFields?[2].text ?? ""
+            let genretext = alert.textFields?[3].text ?? ""
+            let ranktext = alert.textFields?[4].text ?? ""
 
             let formatter = DateFormatter()
             formatter.dateFormat = "yyyy-MM-dd"
@@ -88,33 +95,45 @@ class MovieDetailViewController: UIViewController {
             var genre = [String]()
             var rank : Int = 0
             
-            name = (alert.textFields?[0].text)!
-            imdb = Double((alert.textFields?[1].text)!) ?? 0.0
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "yyyy-MM-dd"
-            releasedate = dateFormatter.date(from: (alert.textFields?[2].text)!)!
-            genre = ((alert.textFields?[3].text)?.components(separatedBy: " "))!
-            rank = Int((alert.textFields?[4].text)!)!
+            name = nametext
+            imdb = Double(imdbtext) ?? 0.0
+            releasedate = formatter.date(from: releasedatetext) ?? Date()
+            genre = genretext.components(separatedBy: ",")
+            rank = Int(ranktext) ?? 0
     
             let movieBody = ResponseData(records: [.init(id: movieDetailData.id,fields: .init(genre: genre, name: name, imdb: imdb, image: [.init(id: movieDetailData.fields.image[0].id,url: nil)], releaseDate: releasedate, rank: rank))])
             
-
-            let url = URL(string: "https://api.airtable.com/v0/appYZwCuz5lum6K3K/Movie")!
-            print(url)
-            var request = URLRequest(url: url)
-            request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
-            request.httpMethod = "PATCH"
-            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-            let encoder = JSONEncoder()
-            formatter.string(from: Date())
-            encoder.dateEncodingStrategy = .formatted(formatter)
-            request.httpBody = try? encoder.encode(movieBody)
-            URLSession.shared.dataTask(with: request) { (data, response, error) in
-                if let data = data,
-                   let content = String(data: data, encoding: .utf8) {
-                    print(content)
+            MovieController.shared.editData(with: movieBody){ (success) in
+                guard let success = success else {return}
+                if success{
+                    DispatchQueue.main.async {
+                        Tool.shared.showAlert(in: self, with: "修改成功")
+                    }
+                }else{
+                    DispatchQueue.main.async {
+                        Tool.shared.showAlert(in: self, with: "修改失敗")
+                    }
                 }
-            }.resume()
+                
+            }
+            
+
+//            let url = URL(string: "https://api.airtable.com/v0/appYZwCuz5lum6K3K/Movie")!
+//            print(url)
+//            var request = URLRequest(url: url)
+//            request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+//            request.httpMethod = "PATCH"
+//            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+//            let encoder = JSONEncoder()
+//            formatter.string(from: Date())
+//            encoder.dateEncodingStrategy = .formatted(formatter)
+//            request.httpBody = try? encoder.encode(movieBody)
+//            URLSession.shared.dataTask(with: request) { (data, response, error) in
+//                if let data = data,
+//                   let content = String(data: data, encoding: .utf8) {
+//                    print(content)
+//                }
+//            }.resume()
 
         }
         alert.addAction(okAction)
@@ -130,20 +149,21 @@ class MovieDetailViewController: UIViewController {
         
         let okAction = UIAlertAction(title: "Confirm", style: .default) { [self] (_) in
             
-            let url = URL(string: "https://api.airtable.com/v0/appYZwCuz5lum6K3K/Movie/\(movieDetailData.id!)")!
-                   print(url)
-                   var request = URLRequest(url: url)
-                   request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
-                   request.httpMethod = "DELETE"
-            let deleteitem = deletedata(id: movieDetailData.id!, deleted: true)
-                   let encoder = JSONEncoder()
-                   request.httpBody = try? encoder.encode(deleteitem)
-                   URLSession.shared.dataTask(with: request) { (data, response, error) in
-                       if let data = data,
-                          let content = String(data: data, encoding: .utf8) {
-                           print(content)
-                       }
-                   }.resume()
+            let id = movieDetailData.id
+            MovieController.shared.deleteData(with : id!){ (deleted) in
+                guard let deleted = deleted else {return}
+                if deleted {
+                    DispatchQueue.main.async {
+                        Tool.shared.showAlert(in: self, with: "刪除成功")
+                    }
+                }else{
+                    DispatchQueue.main.async {
+                        Tool.shared.showAlert(in: self, with: "刪除失敗")
+                    }
+                }
+                
+            }
+            
         }
             alert.addAction(okAction)
             let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)

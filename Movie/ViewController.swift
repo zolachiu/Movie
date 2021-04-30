@@ -44,6 +44,12 @@ class ViewController: UIViewController,UICollectionViewDataSource,UICollectionVi
 
 
     }
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        self.movieCollectionView.reloadData()
+        
+        
+    }
     @objc
     private func didPullToRefresh(_ sender: Any) {
         fetchData(urlStr: urlStr) { (movieData) in
@@ -71,7 +77,7 @@ class ViewController: UIViewController,UICollectionViewDataSource,UICollectionVi
             textField.keyboardType = UIKeyboardType.default
         }
         alert.addTextField{ (textField) in
-            textField.placeholder = "genre"
+            textField.placeholder = "genre: 用,隔開"
             textField.keyboardType = UIKeyboardType.default
         }
 
@@ -83,8 +89,17 @@ class ViewController: UIViewController,UICollectionViewDataSource,UICollectionVi
             textField.placeholder = "rank"
             textField.keyboardType = UIKeyboardType.numberPad
         }
+        
+        
 
         let okAction = UIAlertAction(title: "Save", style: .default) { (_) in
+            
+            let nametext = alert.textFields?[0].text ?? ""
+            let imdbtext = alert.textFields?[1].text ?? ""
+            let releasedatetext = alert.textFields?[2].text ?? ""
+            let genretext = alert.textFields?[3].text ?? ""
+            let imgeurltext = alert.textFields?[4].text ?? ""
+            let ranktext = alert.textFields?[5].text ?? ""
             
             let formatter = DateFormatter()
             formatter.dateFormat = "yyyy-MM-dd"
@@ -95,39 +110,40 @@ class ViewController: UIViewController,UICollectionViewDataSource,UICollectionVi
             var imageurl : String
             var rank : Int = 0
             
-            name = (alert.textFields?[0].text)!
-            imdb = Double((alert.textFields?[1].text)!) ?? 0.0
+            name = nametext
+            imdb = Double(imdbtext) ?? 0.0
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "yyyy-MM-dd"
-            releasedate = dateFormatter.date(from: (alert.textFields?[2].text)!)!
-            genre = ((alert.textFields?[3].text)?.components(separatedBy: " "))!
-            imageurl = (alert.textFields?[4].text)!
-            rank = Int((alert.textFields?[5].text)!)!
+            releasedate = dateFormatter.date(from: releasedatetext) ?? Date()
+            genre = genretext.components(separatedBy: ",")
+            imageurl = imgeurltext
+            rank = Int(ranktext) ?? 0
     
             let movieBody = ResponseData(records: [.init(id: nil,fields: .init(genre: genre, name: name, imdb: imdb, image: [.init(id: nil,url: imageurl)], releaseDate: releasedate, rank: rank))])
             
-            
-            let url = URL(string: "https://api.airtable.com/v0/appYZwCuz5lum6K3K/Movie")!
-            var request = URLRequest(url: url)
-            request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
-            request.httpMethod = "POST"
-            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-            let encoder = JSONEncoder()
-            formatter.string(from: Date())
-            encoder.dateEncodingStrategy = .formatted(formatter)
-            request.httpBody = try? encoder.encode(movieBody)
-            URLSession.shared.dataTask(with: request) { (data, response, error) in
-                if let data = data,
-                   let content = String(data: data, encoding: .utf8) {
-                    print(content)
+            MovieController.shared.uploadData(with: movieBody){ success in
+                guard let success = success else {return}
+                if success{
+                    DispatchQueue.main.async {
+                        Tool.shared.showAlert(in: self, with: "資料新增成功")
+                    }
+                }else{
+                    DispatchQueue.main.async {
+                        Tool.shared.showAlert(in: self, with: "資料新增失敗")
+                    }
                 }
-            }.resume()
+            }
+            
+    
         }
+
+        
 
         alert.addAction(okAction)
         let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
         alert.addAction(cancelAction)
         present(alert, animated: true, completion: nil)
+        
     }
     func numberOfSections(in collectionView: UICollectionView) -> Int {
         1
