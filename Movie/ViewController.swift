@@ -28,16 +28,6 @@ class ViewController: UIViewController,UICollectionViewDataSource,UICollectionVi
             guard let movieData = movieData else { return }
             Record.saveToFile(records: movieData)
         }
-        let url = URL(string: urlStr)!
-        var request = URLRequest(url: url)
-        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
-        URLSession.shared.dataTask(with: request) { (data, response, error) in
-            if let data = data,
-               let content = String(data: data, encoding: .utf8) {
-                print(content)
-                
-            }
-        }.resume()
         refreshControl.addTarget(self, action: #selector(didPullToRefresh(_:)), for: .valueChanged)
         movieCollectionView.alwaysBounceVertical = true
         movieCollectionView.refreshControl = refreshControl
@@ -45,10 +35,14 @@ class ViewController: UIViewController,UICollectionViewDataSource,UICollectionVi
 
     }
     override func viewWillAppear(_ animated: Bool) {
+        
         super.viewWillAppear(animated)
-        self.movieCollectionView.reloadData()
-        
-        
+        setCell()
+        fetchData(urlStr: urlStr) { (movieData) in
+            guard let movieData = movieData else { return }
+            Record.saveToFile(records: movieData)
+        }
+
     }
     @objc
     private func didPullToRefresh(_ sender: Any) {
@@ -124,8 +118,12 @@ class ViewController: UIViewController,UICollectionViewDataSource,UICollectionVi
             MovieController.shared.uploadData(with: movieBody){ success in
                 guard let success = success else {return}
                 if success{
-                    DispatchQueue.main.async {
-                        Tool.shared.showAlert(in: self, with: "資料新增成功")
+                    DispatchQueue.main.async { [self] in
+                        Tool.shared.showResultAndToRoot(in: self, with: "資料新增成功")
+                        fetchData(urlStr: urlStr) { (movieData) in
+                            guard let movieData = movieData else { return }
+                            Record.saveToFile(records: movieData)
+                        }
                     }
                 }else{
                     DispatchQueue.main.async {

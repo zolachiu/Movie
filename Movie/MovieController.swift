@@ -11,6 +11,7 @@ struct MovieController {
     var baseUrlString = "https://api.airtable.com/v0/appYZwCuz5lum6K3K/Movie"
     var baseRequest = URLRequest(url: URL(string: "https://api.airtable.com/v0/appYZwCuz5lum6K3K/Movie")!)
     
+    //MARK: 新增電影資料
     func uploadData(with movieBody: ResponseData, completionHandler: @escaping(Bool?) -> Void) {
         var request = baseRequest
         request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
@@ -24,17 +25,23 @@ struct MovieController {
         request.httpBody = try? encoder.encode(movieBody)
         URLSession.shared.dataTask(with: request) { (data, response, error) in
             
+            if let response = response as? HTTPURLResponse{
+                if response.statusCode == 200{
+                    print("upload successfully")
+                    completionHandler(true)
+                }else{
+                    print(response.statusCode)
+                    print("upload failed")
+                    completionHandler(false)
+                }
+            }
             if let data = data,
                let content = String(data: data, encoding: .utf8) {
-                print("Upload successfully")
                 print(content)
-                completionHandler(true)
-            }else if error != nil{
-                print("Upload failed")
-                completionHandler(false)
             }
         }.resume()
     }
+    //MARK: 修改電影資料
     func editData(with movieBody: ResponseData, completionHandler: @escaping(Bool?) -> Void) {
         var request = baseRequest
         request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
@@ -47,21 +54,23 @@ struct MovieController {
         encoder.dateEncodingStrategy = .formatted(formatter)
         request.httpBody = try? encoder.encode(movieBody)
         URLSession.shared.dataTask(with: request) { (data, response, error) in
-            if error != nil{
-                print("\(error?.localizedDescription)")
+            if let response = response as? HTTPURLResponse{
+                if response.statusCode == 200{
+                    print("upload successfully")
+                    completionHandler(true)
+                }else{
+                    print(response.statusCode)
+                    print("upload failed")
+                    completionHandler(false)
+                }
             }
             if let data = data,
                let content = String(data: data, encoding: .utf8) {
-                print("udpate success")
                 print(content)
-                completionHandler(true)
-            }
-            else{
-                print("update failed")
-                completionHandler(false)
             }
         }.resume()
     }
+    //MARK: 刪除電影資料
     func deleteData(with id: String, completionHandler: @escaping(Bool?) -> Void) {
         
         var deleteUrlString = baseUrlString
@@ -74,21 +83,20 @@ struct MovieController {
         let encoder = JSONEncoder()
         request.httpBody = try? encoder.encode(deleteitem)
         URLSession.shared.dataTask(with: request) { (data, response, error) in
-            if error != nil{
-                print("\(error?.localizedDescription)")
+            if let response = response as? HTTPURLResponse{
+                if response.statusCode == 200{
+                    print("delete successfully")
+                    completionHandler(true)
+                }else{
+                    print(response.statusCode)
+                    print("delete failed")
+                    completionHandler(false)
+                }
             }
             if let data = data,
             let content = String(data: data, encoding: .utf8) {
-                print("Delete successfully")
                 print(content)
-                
-                completionHandler(true)
-                
-            }else{
-                print("Delete failed")
-                completionHandler(false)
             }
-            
         }.resume()
     }
  

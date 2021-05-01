@@ -95,19 +95,31 @@ class MovieDetailViewController: UIViewController {
             var genre = [String]()
             var rank : Int = 0
             
+            
+            
             name = nametext
             imdb = Double(imdbtext) ?? 0.0
             releasedate = formatter.date(from: releasedatetext) ?? Date()
             genre = genretext.components(separatedBy: ",")
             rank = Int(ranktext) ?? 0
+            
     
             let movieBody = ResponseData(records: [.init(id: movieDetailData.id,fields: .init(genre: genre, name: name, imdb: imdb, image: [.init(id: movieDetailData.fields.image[0].id,url: nil)], releaseDate: releasedate, rank: rank))])
+            
+            if alert.textFields?[0].text == "" || alert.textFields?[1].text == "" || alert.textFields?[2].text == "" || alert.textFields?[3].text == "" || alert.textFields?[4].text == ""{
+                DispatchQueue.main.async {
+                    Tool.shared.showAlert(in: self, with: "修改失敗")
+                }
+                return
+                
+            }
             
             MovieController.shared.editData(with: movieBody){ (success) in
                 guard let success = success else {return}
                 if success{
                     DispatchQueue.main.async {
-                        Tool.shared.showAlert(in: self, with: "修改成功")
+                        Tool.shared.showResultAndToRoot(in: self, with: "修改成功")
+                        
                     }
                 }else{
                     DispatchQueue.main.async {
@@ -116,24 +128,6 @@ class MovieDetailViewController: UIViewController {
                 }
                 
             }
-            
-
-//            let url = URL(string: "https://api.airtable.com/v0/appYZwCuz5lum6K3K/Movie")!
-//            print(url)
-//            var request = URLRequest(url: url)
-//            request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
-//            request.httpMethod = "PATCH"
-//            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-//            let encoder = JSONEncoder()
-//            formatter.string(from: Date())
-//            encoder.dateEncodingStrategy = .formatted(formatter)
-//            request.httpBody = try? encoder.encode(movieBody)
-//            URLSession.shared.dataTask(with: request) { (data, response, error) in
-//                if let data = data,
-//                   let content = String(data: data, encoding: .utf8) {
-//                    print(content)
-//                }
-//            }.resume()
 
         }
         alert.addAction(okAction)
@@ -154,7 +148,7 @@ class MovieDetailViewController: UIViewController {
                 guard let deleted = deleted else {return}
                 if deleted {
                     DispatchQueue.main.async {
-                        Tool.shared.showAlert(in: self, with: "刪除成功")
+                        Tool.shared.showResultAndToRoot(in: self, with: "刪除成功")
                     }
                 }else{
                     DispatchQueue.main.async {
