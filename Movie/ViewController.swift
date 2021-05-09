@@ -8,7 +8,7 @@
 import UIKit
 
 private let reuseIdentifier = "MovieCollectionViewCell"
-public let apiKey = "keyqPvP8mSgdHcmPh"
+public let apiKey = myOpenMovieApiKey
 class ViewController: UIViewController,UICollectionViewDataSource,UICollectionViewDelegate {
     
     @IBOutlet weak var movieCollectionView: UICollectionView!
